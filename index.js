@@ -6,11 +6,17 @@ type healthcheckType = () => Promise<resultType>;
 type resultsType = { [string]: { healthy: bool, reason: string } };
 */
 
+/* :: type resType = { status: number => ({ json: mixed => mixed }) } */
+
 function timeout(timeoutDelay /* : number */) /* : Promise<void> */ {
   return new Promise(resolve => {
     setTimeout(() => resolve(), timeoutDelay);
   });
 }
+
+const response = {
+  status: code => ({ json: message => ({ code, message }) }),
+};
 
 const reduceResults = results =>
   results.reduce(
@@ -60,12 +66,14 @@ function healthcheck(
     );
 }
 
-/* :: type resType = { status: number => resType, json: mixed => void } */
-
 function makeRoute(healthchecks /* : Array<healthcheckType> */) {
   const runner = makeRunner(healthchecks);
 
-  return (req /* : mixed */, res /* : resType */, next /* : * => void */) =>
+  return (
+    req /* : mixed */,
+    res /* : resType */ = response,
+    next /* : * => void */
+  ) =>
     runner()
       .then(
         results =>
